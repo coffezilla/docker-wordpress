@@ -1,0 +1,42 @@
+version: "3"
+services:
+
+  # database
+  db:
+    image: mysql:5.7
+    container_name: wp-mysql57-${CONTAINER_PREFIX}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - ${DB_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  
+  # wp content
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    container_name: wp-${CONTAINER_PREFIX}
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./wp-content/:/var/www/html/wp-content/
+      - ./apache2.conf/:/etc/apache2/apache2.conf/
+    ports:
+      - ${APP_PORT}:80
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+
+volumes:
+  db_data:
+    name: wp-mysql57-vol-${CONTAINER_PREFIX}
+  wordpress_data:
+    name: wp-vol-${CONTAINER_PREFIX}
